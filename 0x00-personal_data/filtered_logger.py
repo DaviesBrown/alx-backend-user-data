@@ -14,6 +14,7 @@ PII_FIELDS = ("email",
               "ip",
             )
 
+
 class RedactingFormatter(logging.Formatter):
     """ Redacting Formatter class
         """
