@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""
-filtered datum
-"""
-import re
-from typing import List
+"""Contains a filtering function"""
+
 import logging
+import re
+from typing import List, Tuple
+import os
+import mysql.connector
 
+PII_FIELDS: Tuple = ("name", "email", "phone", "ssn", "password")
 
-PII_FIELDS = ("email",
-              "phone",
-              "ssn",
-              "password",
-              "ip",
-            )
+USERNAME: str = os.getenv("PERSONAL_DATA_DB_USERNAME")
+PASSWORD: str = os.getenv("PERSONAL_DATA_DB_PASSWORD")
+HOST: str = os.getenv("PERSONAL_DATA_DB_HOST")
+DATABASE: str = os.getenv("PERSONAL_DATA_DB_NAME")
 
 
 class RedactingFormatter(logging.Formatter):
@@ -28,27 +28,77 @@ class RedactingFormatter(logging.Formatter):
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
-        """ filter values in incoming log records using filter_datum"""
-        log_message = super().format(record)
-        if self.fields:
-            for field in self.fields:
-                log_message = filter_datum([field], self.REDACTION, log_message, self.SEPARATOR)
-        return log_message
+        """
+        filters incoming records
+        :param record:
+        :return:
+            filtered result
+        """
+        return filter_datum(self.fields, self.REDACTION,
+                            super().format(record), self.SEPARATOR)
 
 
-def filter_datum(fields, redaction, message, separator):
-    """filtered dactum"""
-    pattern = '|'.join(fields)
-    regex = f'({pattern})=[^;]*'
-    return re.sub(regex, f'\\1={redaction}', message)
+def filter_datum(fields: List[str], redaction: str,
+                 message: str, separator: str) -> str:
+    """
+    Obfuscates the sensitive fields in a log message.
+    """
+    for field in fields:
+        if field in message:
+            message = re.sub(r"{}=.*?{}".format(field, separator),
+                             '{}={}{}'.format(field, redaction, separator),
+                             message)
+    return message
 
 
 def get_logger() -> logging.Logger:
-    """ get logger function"""
-    logger = logging.Logger("user_data", logging.INFO)
+    """
+    :return:
+        logging.logger object
+    """
+    logger = logging.getLogger("user_data")
+    logger.setLevel(logging.INFO)
     logger.propagate = False
-    formatter = RedactingFormatter(fields=PII_FIELDS)
     stream_handler = logging.StreamHandler()
+    formatter = RedactingFormatter(fields=PII_FIELDS)
     stream_handler.setFormatter(formatter)
-    logger = logger.addHandler(stream_handler)
+    logger.addHandler(stream_handler)
     return logger
+
+
+def get_db() -> mysql.connector.connection.MySQLConnection:
+    """ returns a secured connection"""
+    connection = mysql.connector.connect(
+        host=HOST,
+        user=USERNAME,
+        password=PASSWORD,
+        database=DATABASE
+    )
+    return connection
+
+
+def main() -> None:
+    """ main function"""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users;")
+    fields = [description[0] for description in cursor.description]
+    logger = get_logger()
+    for row in cursor:
+        row_data = dict(zip(fields, row))
+        string = []
+        s = RedactingFormatter.SEPARATOR
+        for field, value in row_data.items():
+            if field in PII_FIELDS:
+                string.append(f"{field}={RedactingFormatter.REDACTION}{s}")
+            elif field == "last_login":
+                string.append(f"{field}={value.isoformat()}{s}")
+            else:
+                string.append(f"{field}={value}{s}")
+        logger.info(f" ".join(string))
+    cursor.close()
+    db.close()
+
+
+if __name__ == "__main__":
+    main()
