@@ -26,6 +26,7 @@ else:
 
 @app.before_request
 def before_request():
+    """ runs before every request to auth"""
     if auth is None:
         return
     if not auth.require_auth(request.path, excluded):

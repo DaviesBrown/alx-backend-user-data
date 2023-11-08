@@ -15,13 +15,13 @@ def status() -> str:
 
 
 @app_views.route('/unauthorized', methods=['GET'], strict_slashes=False)
-def unauthorized():
+def unauthorized() -> None:
     """unauthorized test endpoint"""
     return abort(401)
 
 
 @app_views.route('/forbidden', methods=['GET'], strict_slashes=False)
-def forbidden():
+def forbidden() -> None:
     """forbidden test endpoint"""
     return abort(403)
 
