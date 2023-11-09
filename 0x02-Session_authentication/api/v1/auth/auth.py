@@ -14,7 +14,6 @@ class Auth:
             return True
         if excluded_paths is None:
             return True
-        path_end = [i.split("/", -1)[-1][:-1] if i.endswith("*") else i for i in excluded_paths]
         path = path + "/" if path[-1] != '/' else path
         if path not in excluded_paths:
             return True

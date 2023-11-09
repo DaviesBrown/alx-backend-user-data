@@ -21,7 +21,7 @@ class SessionAuth(Auth):
         sessionID = str(uuid.uuid4())
         self.user_id_by_session_id[sessionID] = user_id
         return sessionID
-    
+
     def user_id_for_session_id(self, session_id: str = None) -> str:
         """ returns a user id based on session id"""
         if session_id is None:
@@ -33,10 +33,10 @@ class SessionAuth(Auth):
     def current_user(self, request=None) -> TypeVar('User'):
         """ return current session user"""
         session_id = self.session_cookie(request)
-        user_id = self.user_id_for_session_id(session_id)
+        user_id = self.user_id_for_session_id(session_id=session_id)
         user = User.get(user_id)
         return user
-    
+
     def destroy_session(self, request=None):
         """ detroy user session"""
         if request is None:
@@ -49,4 +49,3 @@ class SessionAuth(Auth):
             return False
         del self.user_id_by_session_id[session_id]
         return True
-
