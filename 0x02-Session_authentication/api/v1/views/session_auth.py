@@ -3,7 +3,7 @@
 """
 from typing import TypeVar
 from api.v1.views import app_views
-from flask import Response, abort, jsonify, request
+from flask import abort, jsonify, request
 from models.user import User
 
 
