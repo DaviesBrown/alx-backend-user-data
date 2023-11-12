@@ -8,7 +8,7 @@ from models.user import User
 
 
 @app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
-def login_user() -> Response:
+def login_user():
     """ POST /api/v1/auth_session/login/
     JSON body:
       - email
@@ -40,7 +40,7 @@ def login_user() -> Response:
 
 @app_views.route('/auth_session/logout',
                  methods=['DELETE'], strict_slashes=False)
-def logout_user() -> Response:
+def logout_user():
     """ DELETE /api/v1/auth_session/logout/
     Return:
       - empty JSON is the User has been correctly deleted

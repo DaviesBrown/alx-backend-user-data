@@ -15,6 +15,7 @@ class SessionDBAuth(SessionExpAuth):
         super().__init__()
 
     def create_session(self, user_id: str = None) -> str:
+        """ create user session"""
         session_id = super().create_session(user_id=user_id)
         print(session_id)
         user_session = UserSession(user_id=user_id, session_id=session_id)
