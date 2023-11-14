@@ -37,10 +37,9 @@ def login():
     if email is None and password is None:
         return abort(403)
     is_valid = AUTH.valid_login(email=email, password=password)
-    print(is_valid)
     if is_valid:
         ses_id = AUTH.create_session(email=email)
-        res = jsonify({"email": email, "message": "logged in"})
+        res = jsonify({"email": email, "message": "logged in"}), 200
         res.set_cookie("session_id", ses_id)
         return res
     else:
@@ -55,7 +54,6 @@ def logout():
         return abort(403)
     try:
         user = AUTH.get_user_from_session_id(session_id)
-        print(user)
         AUTH.destroy_session(user.id)
         return redirect("/", 302)
     except Exception:
