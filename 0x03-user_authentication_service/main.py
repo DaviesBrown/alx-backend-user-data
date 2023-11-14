@@ -11,44 +11,57 @@ url = "http://0.0.0.0:5000"
 def register_user(email: str, password: str) -> None:
     """ register user test"""
     data = {'email': email, 'password': password}
-    requests.post(f"{url}/users", data=data)
+    res = requests.post(f"{url}/users", data=data)
+    assert res.status_code == 200
+    assert res.json() == {
+        "email": "guillaume@holberton.io",
+        "message": "user created"
+    }
 
 
 def log_in_wrong_password(email: str, password: str) -> None:
     """ login wrong password test"""
-    data = {'email': email, 'password': password}
-    requests.post(f"{url}/sessions", data=data)
+    data = {'email': "guillaume@holberton.io", 'password': password}
+    res = requests.post(f"{url}/sessions", data=data)
+    assert res.status_code == 401
 
 
 def log_in(email: str, password: str) -> str:
     """ login user test"""
     data = {'email': email, 'password': password}
     res = requests.post(f"{url}/sessions", data=data)
+    assert res.status_code == 200
+    assert res.json() == {"email": email, "message": "logged in"}
     return res.cookies.get("session_id")
 
 
 def profile_unlogged() -> None:
     """ profile unlogged test"""
-    requests.get(f"{url}/profile")
+    res = requests.get(f"{url}/profile")
+    assert res.status_code == 403
 
 
 def profile_logged(session_id: str) -> None:
     """ profile logged test"""
     jar = requests
     cookies = dict(session_id=session_id)
-    requests.get(f"{url}/profile", cookies=cookies)
+    res = requests.get(f"{url}/profile", cookies=cookies)
+    assert res.status_code == 200
+    assert res.json() == {"email": "guillaume@holberton.io"}
 
 
 def log_out(session_id: str) -> None:
     """ logout user test"""
     cookies = dict(session_id=session_id)
-    requests.delete(f"{url}/sessions", cookies=cookies)
+    res = requests.delete(f"{url}/sessions", cookies=cookies)
+    assert res.status_code == 200
 
 
 def reset_password_token(email: str) -> str:
     """reset password test"""
     data = {'email': email}
     res = requests.post(f"{url}/reset_password", data=data)
+    assert res.status_code == 200
     return res.json().get("reset_token")
 
 
@@ -59,7 +72,12 @@ def update_password(email: str, reset_token: str, new_password: str) -> None:
         "reset_token": reset_token,
         "new_password": new_password
     }
-    requests.put(f"{url}/update_password", data=data)
+    res = requests.put(f"{url}/update_password", data=data)
+    assert res.status_code == 200
+    assert res.json() == {
+        "email": "guillaume@holberton.io",
+        "message": "Password updated"
+    }
 
 
 EMAIL = "guillaume@holberton.io"
