@@ -34,6 +34,8 @@ class DB:
     def add_user(self, email: str, hashed_password: str) -> User:
         """ save user to db"""
         user = User(email=email, hashed_password=hashed_password)
+        if email is None and hashed_password is None:
+            return None
         self._session.add(user)
         self._session.commit()
         return user
@@ -48,6 +50,8 @@ class DB:
 
     def update_user(self, user_id: str, **kwd) -> None:
         """ updates user's atribute"""
+        if user_id is None:
+            return
         user = self.find_user_by(id=user_id)
         for k, v in kwd.items():
             setattr(user, k, v)
