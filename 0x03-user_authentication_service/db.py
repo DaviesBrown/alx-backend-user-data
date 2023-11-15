@@ -43,6 +43,9 @@ class DB:
     def find_user_by(self, **kwd) -> User:
         """ find user by keyword arg"""
         session = self._session
+        for k in kwd:
+            if k not in User.__class__.columns:
+                raise InvalidRequestError()
         user = session.query(User).filter_by(**kwd).first()
         if user is None:
             raise NoResultFound()
