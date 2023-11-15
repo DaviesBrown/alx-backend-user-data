@@ -31,14 +31,14 @@ class DB:
             self.__session = DBSession()
         return self.__session
 
-    def add_user(self, email: str, hashed_password: str) -> User:
+    def add_user(self, email: str, hashed_password: str):
         """ save user to db"""
         user = User(email=email, hashed_password=hashed_password)
         self._session.add(user)
         self._session.commit()
         return user
 
-    def find_user_by(self, **kwd) -> User:
+    def find_user_by(self, **kwd) ->:
         """ find user by keyword arg"""
         session = self._session
         user = session.query(User).filter_by(**kwd).first()
